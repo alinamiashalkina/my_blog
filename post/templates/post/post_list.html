@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block title %}Список всех постов{% endblock %}
+{% block content %}
+
+<h1>Список всех постов</h1>
+
+<a href="{% url 'create_post' %}">Создать новый пост</a>
+
+<ul>
+    {% for post in posts %}
+        <li>
+            <h2><a href="{% url 'post_details' post.id %}">{{ post.title }}</a></h2>
+            <p>Автор: {{ post.author }} | Дата: {{ post.created_at }}</p>
+            <p>{{ post.post_text|truncatewords:30 }}</p>
+        </li>
+    {% empty %}
+        <li>В блоге еще нет ни одного поста.</li>
+    {% endfor %}
+</ul>
+
+{% endblock %}

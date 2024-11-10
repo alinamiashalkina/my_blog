@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block title %}Малиновости{% endblock %}
+{% block content %}
+
+{% if user.is_authenticated %}
+    <h1>Добро пожаловать в блог, {{ user.username }}!</h1>
+    <a href="{% url 'post_list' %}">Список всех постов</a>
+    <form action="{% url 'logout' %}" method="post">
+        {% csrf_token %}
+        <button type="submit">Выход</button>
+    </form>
+{% else %}
+    <h1>Добро пожаловать в блог!</h1>
+    <form action="{% url 'login' %}" method="post">
+        {% csrf_token %}
+        <button type="submit">Войти</button>
+    </form>
+    <a href="{% url 'registration' %}">Зарегистрироваться</a>
+{% endif %}
+
+{% endblock %}

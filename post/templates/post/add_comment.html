@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block title %}Добавление комментария{% endblock %}
+{% block content %}
+
+<h1>Добавить комментарий к "{{ post.title }}"</h1>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Добавить комментарий</button>
+</form>
+
+<a href="{% url 'post_details' post.id %}">Назад к посту</a>
+
+{% endblock %}

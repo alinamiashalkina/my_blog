@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block title %}Пост: подробнее{% endblock %}
+{% block content %}
+
+<h2>{{ post.title }}</h2>
+<p>{{ post.post_text }}</p>
+<p>Автор: {{ post.author }}</p>
+
+{% if request.user == post.author %}
+    <div class="form-action">
+        <a href="{% url 'edit_post' post.id %}">Редактировать пост</a>
+        <form action="{% url 'delete_post' post.id %}" method="POST" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit">Удалить пост</button>
+        </form>
+    </div>
+{% endif %}
+
+<h3>Комментарии:</h3>
+<ul>
+    {% for comment in post.comments.all %}
+        <li>
+            <strong>{{ comment.author }}:</strong> {{ comment.comment_text }}
+            ({{ comment.create_date }} )
+
+            {% if request.user == comment.author %}
+                <form action="{% url 'delete_comment' comment.id %}" method="POST"
+                      style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit">Удалить</button>
+                </form>
+            {% endif %}
+        </li>
+    {% empty %}
+        <li>Комментариев нет.</li>
+    {% endfor %}
+</ul>
+<form action="{% url 'add_comment' post.id %}" method="POST" style="display:inline;">
+    {% csrf_token %}
+    <button type="submit">Добавить комментарий</button>
+</form>
+<a href="{% url 'post_list' %}">Назад к списку всех постов</a>
+
+{% endblock %}
