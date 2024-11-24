@@ -10,7 +10,7 @@
     {% for post in posts %}
         <li>
             <h2><a href="{% url 'post_details' post.id %}">{{ post.title }}</a></h2>
-            <p>Автор: {{ post.author }} | Дата: {{ post.created_at }}</p>
+            <p>Автор: {{ post.author }} | Дата: {{ post.publication_date }}</p>
             <p>{{ post.post_text|truncatewords:30 }}</p>
         </li>
     {% empty %}

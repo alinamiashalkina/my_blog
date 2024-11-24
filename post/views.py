@@ -1,67 +1,65 @@
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render, get_object_or_404, redirect
+from django.urls import reverse, reverse_lazy
+from django.views.generic import (
+    ListView,
+    DetailView,
+    CreateView,
+    UpdateView,
+    DeleteView,
+)
 
-from .forms import PostForm, CommentForm
+from .forms import CommentForm
 from .models import Post, Comment
 
 
-@login_required
-def post_list(request):
-    posts = Post.objects.all()
-    return render(request, "post/post_list.html",
-                  {"posts": posts})
+class PostListView(LoginRequiredMixin, ListView):
+    model = Post
+    template_name = "post/post_list.html"
+    context_object_name = "posts"
 
 
-@login_required
-def post_details(request, pk):
-    post = get_object_or_404(Post, pk=pk)
-    return render(request, "post/post_details.html",
-                  {"post": post})
+class PostDetailView(LoginRequiredMixin, DetailView):
+    model = Post
+    template_name = "post/post_details.html"
+    context_object_name = "post"
 
 
-@login_required
-def create_post(request):
-    if request.method == "POST":
-        form = PostForm(request.POST)
-        if form.is_valid():
-            # Создаем объект, но пока не сохраняем в базе данных
-            post = form.save(commit=False)
-            # Добавляем текущего пользователя в качестве автора
-            post.author = request.user
-            # Сохраняем объект в базе данных
-            post.save()
-            return redirect("post_details", pk=post.pk)
-    else:
-        form = PostForm()
+class PostCreateView(LoginRequiredMixin, CreateView):
+    model = Post
+    fields = ["title", "post_text"]
+    template_name = 'post/create_post.html'
+    success_url = reverse_lazy("post_details")
+    context_object_name = "post"
 
-    return render(request, "post/create_post.html",
-                  {"form": form})
+    def form_valid(self, form):
+        # Устанавливаем автором поста текущего пользователя
+        form.instance.author = self.request.user
+        return super().form_valid(form)
 
-
-@login_required
-def edit_post(request, pk):
-    post = get_object_or_404(Post, pk=pk)
-
-    if request.method == "POST":
-        form = PostForm(request.POST, instance=post)
-        if form.is_valid():
-            form.save()  # Сохраняем изменения в посте
-            return redirect("post_details", pk=post.pk)
-    else:
-        # Заполняем форму данными существующего поста
-        form = PostForm(instance=post)
-
-    return render(request, "post/edit_post.html",
-                  {"form": form, "post": post})
+    def get_success_url(self):
+        # Возвращаем URL с использованием pk созданного поста
+        return reverse("post_details",
+                       kwargs={"pk": self.object.pk})
 
 
-@login_required
-def delete_post(request, pk):
-    post = get_object_or_404(Post, pk=pk)
+class PostUpdateView(LoginRequiredMixin, UpdateView):
+    model = Post
+    fields = ["title", "post_text"]
+    template_name = "post/edit_post.html"
+    success_url = reverse_lazy("post_details")
+    context_object_name = "post"
 
-    if request.method == "POST":
-        post.delete()
-        return redirect("post_list")
+    def get_success_url(self):
+        # Возвращаем URL с использованием pk отредактированного поста
+        return reverse("post_details",
+                       kwargs={"pk": self.object.pk})
+
+
+class PostDeleteView(LoginRequiredMixin, DeleteView):
+    model = Post
+    success_url = reverse_lazy("post_list")
 
 
 @login_required
@@ -91,4 +89,3 @@ def delete_comment(request, pk):
     if request.method == "POST":
         comment.delete()
         return redirect("post_details", pk=comment.post.id)
-
