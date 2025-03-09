@@ -1,0 +1,45 @@
+services:
+  web:
+    build: app/
+    container_name: myblog_app
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./app/static:/app/static
+    depends_on:
+      - db
+
+
+  db:
+    image: postgres
+    container_name: database
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - my_blog_db:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_HOST=${DB_HOST}
+
+
+  redis:
+    image: redis
+    container_name: redis
+    restart: always
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+
+
+volumes:
+  my_blog_db:
+  redis_data:
